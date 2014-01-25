@@ -1,0 +1,97 @@
+2009-09-18
+
+* de, Forを追加
+
+#define de(x) cout << #x << ':' << endl
+#define For(i, x) for (int i = 0; i < (int)x; i++)
+
+2008-07-07
+
+* typedefはvi,vs,ullのみに
+
+沢山のtypedefの定義を作成したが、vi,vs以外は一度も使用することがなかったので、vi,vs以外は全て削除。ull(unsigned long long)を追加。
+
+2008-01-20
+
+* [TODO] コード中のtypedefは削除しないように
+
+スクリプト側で重複するtypedefを削除するようにすればよい。
+
+2007-12-05
+
+* utilityが他のutilityを参照
+
+対応するようにccxを修正したが、問題に出くわした。関数定義の現れる位置によって、関数のプロトタイプ宣言が必要になるが、関数の呼び出し関係を把握しなくては、その対応ができない。さてどうするか。
+
+たとえば、いまどのような不具合がでるかを書いておくと、string_strip()はskipspace()を呼び出す(どちらもutility code)。main()でstring_strip()を呼び出すと、mainの前にskipspace()とstring_strip()の関数定義が挿入される。ここで、さらにmain()で、string_split()を呼び出す。string_split()もskipspace()を呼び出すが、string_split()の関数定義が挿入される位置は、skipspace()の前になるのだ(こうならざるおえない)。結果、コンパイルエラーとなる。
+
+対策を考える:
+
+(1)関数ごとにプロトタイプ宣言を挿入するようにする
+(2)関数の呼び出し関係を把握して、関数の挿入位置を制御する
+(3)今回の問題は、頻繁に発生するものではないので、まあ問題に出くわしたら手動で直すようにする。
+
+とりあえず、(3)で様子をみるか。
+
+--
+次のコードがリンクエラーになるね。
+
+void foo(int n) {
+  void bar(int n); // リンクエラー
+  bar(10);
+}
+
+int main() {
+  foo(1);
+}
+
+utilityの中で他のutilityを参照するものは、すべてプロトタイプ宣言を入れておくかな。その方が問題が発生したときに楽か。この場合の1行はケチるべきではないね。
+
+2007-10-10
+
+* typedef追加
+
+typedef unsigned int uint;
+
+2007-10-09
+
+* typedef変更
+
+typedef string str; ==> typedef string S;
+
+2007-10-06
+
+* typedef改良
+
+vec   => vector<int>
+vecs  => vector<string>
+vecl  => vector<long long>
+
+mapii => map<int, int>
+mapis => map<int, string>
+mapsi => map<string, int>
+mapss => map<string, string>
+mapsv => map<string, vector<int> >
+mapiv => map<int, vector<int> >
+mapsv => map<string, vector<int> >
+
+str   => string
+
+2007-09-30
+
+* typedef
+
+vec,svec,strを型とみなす。これらのトークンがプログラムの中で見つかれば、以下のtypedefを挿入する。
+
+typedef vector<int> vec;
+typedef vector<string> svec;
+typedef string str;
+
+* ヘッダーのソート
+
+include文はソートするようにした。
+
+2007-08-17
+
+あたらしく作成し直す。.ccxファイルにプログラムを書いて、ccxコマンドで.cppファイルを作成してそれからg++を起動しようと考えていたが、いざ使ってみると、g++でコンパイルエラーや警告が出た場合にはいちいち.cppファイルを参照しなくてはならないので、逆に手間がかかるようになってしまった。なので、コンパイルするときに毎回cxxコマンドを起動してソースを更新してから、g++を起動するようにする。そうしないといつまでたってもUVaにsubmitしたときのコンパイルエラーを回避することが出来ないから。
+
